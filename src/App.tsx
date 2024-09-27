@@ -5,13 +5,11 @@ import {
   addComment,
   deleteComment,
   likeComment,
+  updateNewComment,
+  updateUsername,
+  updateFullName,
 } from "./features/commentsSlice";
 import { Button, Input, Skeleton } from "antd";
-
-const SCROLL_POSITION_KEY = "scrollPosition";
-const COMMENT_INPUT_KEY = "commentInput";
-const COMMENT_USERNAME = "commentUsername";
-const COMMENT_FULLNAME = "commentFullName";
 
 interface User {
   id: number;
@@ -28,59 +26,44 @@ interface Comment {
 
 const App: React.FC = () => {
   const dispatch = useAppDispatch();
-  const { comments, loading } = useAppSelector((state) => state.comments);
-  const [newComment, setNewComment] = useState<string>("");
-  const [username, setUsername] = useState<string>("");
-  const [fullName, setFullName] = useState<string>("");
+  const { comments, loading, newComment, username, fullName } = useAppSelector(
+    (state) => state.comments
+  );
 
   const [fadingIn, setFadingIn] = useState<number | null>(null);
 
   const saveScrollPosition = () => {
     const scrollPosition = window.scrollY;
-    localStorage.setItem(SCROLL_POSITION_KEY, JSON.stringify(scrollPosition));
+    localStorage.setItem("scrollPosition", JSON.stringify(scrollPosition));
   };
 
   const restoreScrollPosition = () => {
-    const savedPosition = localStorage.getItem(SCROLL_POSITION_KEY);
+    const savedPosition = localStorage.getItem("scrollPosition");
     if (savedPosition) {
       window.scrollTo(0, JSON.parse(savedPosition));
     }
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setNewComment(e.target.value);
-    localStorage.setItem(COMMENT_INPUT_KEY, e.target.value);
-  };
-
-  const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setUsername(e.target.value);
-    localStorage.setItem(COMMENT_USERNAME, e.target.value);
-  };
-
-  const handleFullNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFullName(e.target.value);
-    localStorage.setItem(COMMENT_FULLNAME, e.target.value);
-  };
-
-  const restoreInputs = () => {
-    const savedInput = localStorage.getItem(COMMENT_INPUT_KEY);
-    const savedUsername = localStorage.getItem(COMMENT_USERNAME);
-    const savedFullName = localStorage.getItem(COMMENT_FULLNAME);
-    if (savedInput) setNewComment(savedInput);
-    if (savedUsername) setUsername(savedUsername);
-    if (savedFullName) setFullName(savedFullName);
-  };
-
   useEffect(() => {
     dispatch(fetchComments());
     restoreScrollPosition();
-    restoreInputs();
     window.addEventListener("beforeunload", saveScrollPosition);
-
     return () => {
       window.removeEventListener("beforeunload", saveScrollPosition);
     };
   }, [dispatch]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    dispatch(updateNewComment(e.target.value));
+  };
+
+  const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    dispatch(updateUsername(e.target.value));
+  };
+
+  const handleFullNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    dispatch(updateFullName(e.target.value));
+  };
 
   const handleAddComment = () => {
     const comment: Comment = {
@@ -94,9 +77,7 @@ const App: React.FC = () => {
       likes: 0,
     };
     dispatch(addComment(comment));
-    setNewComment("");
-    localStorage.removeItem(COMMENT_INPUT_KEY);
-
+    dispatch(updateNewComment(""));
     setFadingIn(comment.id);
     setTimeout(() => {
       setFadingIn(null);

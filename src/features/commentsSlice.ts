@@ -14,25 +14,18 @@ export interface Comment {
   likes: number;
 }
 
-interface CommentsState {
-  comments: Comment[];
-  loading: boolean;
-}
-
 const COMMENTS_STORAGE_KEY = "commentsData";
-
-const loadCommentsFromLocalStorage = (): Comment[] => {
-  const savedComments = localStorage.getItem(COMMENTS_STORAGE_KEY);
-  return savedComments ? JSON.parse(savedComments) : [];
-};
 
 const saveCommentsToLocalStorage = (comments: Comment[]) => {
   localStorage.setItem(COMMENTS_STORAGE_KEY, JSON.stringify(comments));
 };
 
-const initialState: CommentsState = {
-  comments: loadCommentsFromLocalStorage(),
+const initialState = {
+  comments: [] as Comment[],
   loading: false,
+  newComment: localStorage.getItem("newComment") || "",
+  username: localStorage.getItem("commentUsername") || "",
+  fullName: localStorage.getItem("commentFullName") || "",
 };
 
 export const fetchComments = createAsyncThunk(
@@ -66,6 +59,18 @@ const commentsSlice = createSlice({
         saveCommentsToLocalStorage(state.comments);
       }
     },
+    updateNewComment(state, action: PayloadAction<string>) {
+      state.newComment = action.payload;
+      localStorage.setItem("newComment", action.payload);
+    },
+    updateUsername(state, action: PayloadAction<string>) {
+      state.username = action.payload;
+      localStorage.setItem("commentUsername", action.payload);
+    },
+    updateFullName(state, action: PayloadAction<string>) {
+      state.fullName = action.payload;
+      localStorage.setItem("commentFullName", action.payload);
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -84,5 +89,12 @@ const commentsSlice = createSlice({
   },
 });
 
-export const { addComment, deleteComment, likeComment } = commentsSlice.actions;
+export const {
+  addComment,
+  deleteComment,
+  likeComment,
+  updateFullName,
+  updateNewComment,
+  updateUsername,
+} = commentsSlice.actions;
 export default commentsSlice.reducer;
