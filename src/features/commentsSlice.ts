@@ -19,8 +19,19 @@ interface CommentsState {
   loading: boolean;
 }
 
+const COMMENTS_STORAGE_KEY = "commentsData";
+
+const loadCommentsFromLocalStorage = (): Comment[] => {
+  const savedComments = localStorage.getItem(COMMENTS_STORAGE_KEY);
+  return savedComments ? JSON.parse(savedComments) : [];
+};
+
+const saveCommentsToLocalStorage = (comments: Comment[]) => {
+  localStorage.setItem(COMMENTS_STORAGE_KEY, JSON.stringify(comments));
+};
+
 const initialState: CommentsState = {
-  comments: [],
+  comments: loadCommentsFromLocalStorage(),
   loading: false,
 };
 
@@ -38,11 +49,13 @@ const commentsSlice = createSlice({
   reducers: {
     addComment: (state, action: PayloadAction<Comment>) => {
       state.comments.unshift(action.payload);
+      saveCommentsToLocalStorage(state.comments);
     },
     deleteComment: (state, action: PayloadAction<number>) => {
       state.comments = state.comments.filter(
         (comment) => comment.id !== action.payload
       );
+      saveCommentsToLocalStorage(state.comments);
     },
     likeComment: (state, action: PayloadAction<number>) => {
       const comment = state.comments.find(
@@ -50,6 +63,7 @@ const commentsSlice = createSlice({
       );
       if (comment) {
         comment.likes += 1;
+        saveCommentsToLocalStorage(state.comments);
       }
     },
   },
@@ -59,9 +73,12 @@ const commentsSlice = createSlice({
         state.loading = true;
       })
       .addCase(fetchComments.fulfilled, (state, action) => {
-        state.comments = action.payload.map((comment: Comment) => ({
-          ...comment,
-        }));
+        if (state.comments.length === 0) {
+          state.comments = action.payload.map((comment: Comment) => ({
+            ...comment,
+          }));
+          saveCommentsToLocalStorage(state.comments);
+        }
         state.loading = false;
       });
   },

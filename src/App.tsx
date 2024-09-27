@@ -66,15 +66,9 @@ const App: React.FC = () => {
     const savedInput = localStorage.getItem(COMMENT_INPUT_KEY);
     const savedUsername = localStorage.getItem(COMMENT_USERNAME);
     const savedFullName = localStorage.getItem(COMMENT_FULLNAME);
-    if (savedInput) {
-      setNewComment(savedInput);
-    }
-    if (savedUsername) {
-      setUsername(savedUsername);
-    }
-    if (savedFullName) {
-      setFullName(savedFullName);
-    }
+    if (savedInput) setNewComment(savedInput);
+    if (savedUsername) setUsername(savedUsername);
+    if (savedFullName) setFullName(savedFullName);
   };
 
   useEffect(() => {
